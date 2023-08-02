@@ -162,27 +162,29 @@ if bool_eeg:
         except SyntaxError:
             continue
 else:
-    fname = input('Enter the file name (ex. abc.csv) : ')
-    testData = pd.read_csv(fname).to_numpy()
-    testData = rescale.transform(testData)
-    print('LightGBM', le.inverse_transform(model4.predict(testData)))
-    num_idle = 0;
-    num_sleepy = 0;
-    num_sleep = 0
-    for i in le.inverse_transform(model4.predict(testData)):
-        if i == "IDLE":
-            num_idle += 1
-        elif i == "SLEEPY":
-            num_sleepy += 1
-        elif i == "SLEEP":
-            num_sleep += 1
-    num_array = [num_idle, num_sleepy, num_sleep]
-    num_max = max(num_idle, num_sleepy, num_sleep)
-    num_max_idx = str(num_array.index(num_max))
-    print('----------------------------------------------')
-    print('MAX_Condition', num_max_idx)
-    if bool_arduino:
-        ser = serial.Serial('COM5', 9600)
-        if ser.readable():
-            ser.write(str.encode(num_max_idx))
-
+    try:
+        fname = input('Enter the file name (ex. abc.csv) : ')
+        testData = pd.read_csv(fname).to_numpy()
+        testData = rescale.transform(testData)
+        print('LightGBM', le.inverse_transform(model4.predict(testData)))
+        num_idle = 0;
+        num_sleepy = 0;
+        num_sleep = 0
+        for i in le.inverse_transform(model4.predict(testData)):
+            if i == "IDLE":
+                num_idle += 1
+            elif i == "SLEEPY":
+                num_sleepy += 1
+            elif i == "SLEEP":
+                num_sleep += 1
+        num_array = [num_idle, num_sleepy, num_sleep]
+        num_max = max(num_idle, num_sleepy, num_sleep)
+        num_max_idx = str(num_array.index(num_max))
+        print('----------------------------------------------')
+        print('MAX_Condition', num_max_idx)
+        if bool_arduino:
+            ser = serial.Serial('COM5', 9600)
+            if ser.readable():
+                ser.write(str.encode(num_max_idx))
+    except FileNotFoundError:
+        print('File Not Found')
