@@ -1,6 +1,5 @@
 from socket import *
 from datetime import datetime
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -35,38 +34,12 @@ le.fit(y_train)
 y_train = le.transform(y_train)
 y_test = le.transform(y_test)
 
-print('KNN Model Training Start')
-
-model = KNeighborsClassifier()
-model.fit(x_train,y_train)
-print("Train Score :", model.score(x_train,y_train), "Test Score :", model.score(x_test,y_test))
-
-from sklearn.linear_model import LogisticRegression
-print("LogisticRegression Model Training Start")
-model1 = LogisticRegression()
-model1.fit(x_train,y_train)
-print("Train Score :", model1.score(x_train,y_train), "Test Score :", model1.score(x_test,y_test))
-
-from sklearn.ensemble import GradientBoostingClassifier
-print("GradientBoosting Model Training Start")
-model2 = GradientBoostingClassifier()
-model2.fit(x_train,y_train)
-print("Train Score :", model2.score(x_train,y_train), "Test Score :", model2.score(x_test,y_test))
-
-from xgboost import XGBClassifier
-print("XGBoost Model Training Start")
-model3 = XGBClassifier(n_estimators = 400,learning_rate = 0.0001,max_depth=7)
-model3.fit(x_train,y_train)
-model3.score(x_test,y_test)
-print("Train Score :", model3.score(x_train,y_train), "Test Score :", model3.score(x_test,y_test))
-
 from lightgbm import LGBMClassifier
 print("LightGBM Model Training Start")
 model4 = LGBMClassifier(n_estimators=200)
 model4.fit(x_train,y_train)
 print("Train Score :", model4.score(x_train,y_train), "Test Score :", model4.score(x_test,y_test))
 
-unique, counts = np.unique(model3.predict(x_test), return_counts=True)
 unique, counts = np.unique(y_test, return_counts=True)
 
 le.classes_
@@ -82,6 +55,12 @@ if bool_eeg == 'y':
     bool_eeg = True
 elif bool_eeg == 'n':
     bool_eeg = False
+bool_arduino = input('Do you want to connect with Arduino? (y/n) ')
+if bool_arduino == 'y':
+    bool_arduino = True
+elif bool_arduino == 'n':
+    bool_arduino = False
+
 
 if bool_eeg:
     HOST = '127.0.0.1'
@@ -109,8 +88,8 @@ if bool_eeg:
     highBeta = [];
     lowGamma = [];
     highGamma = []
-
-    ser = serial.Serial('COM5', 9600)
+    if bool_arduino:
+        ser = serial.Serial('COM5', 9600)
     temp = 0
     times = 0
     result_10s = []
@@ -147,10 +126,6 @@ if bool_eeg:
             df.to_csv(filename + '.csv', index=False)
             testData = pd.read_csv(filename + '.csv').to_numpy()
             testData = rescale.transform(testData)
-            print('KNN', le.inverse_transform(model.predict(testData))[-1])
-            print('logostic RG', le.inverse_transform(model1.predict(testData))[-1])
-            print('GradientBoosting', le.inverse_transform(model2.predict(testData))[-1])
-            print('XGBoosoting', le.inverse_transform(model3.predict(testData))[-1])
             print('LightGBM', le.inverse_transform(model4.predict(testData))[-1])
             if times < 10:
                 result_10s.append(le.inverse_transform(model4.predict(testData))[-1])
@@ -171,9 +146,9 @@ if bool_eeg:
                 num_max_idx = str(num_array.index(num_max))
                 print('----------------------------------------------')
                 print('MAX_Condition', num_max_idx)
-                if ser.readable():
+                if ser.readable() and bool_arduino:
                     ser.write(str.encode(num_max_idx))
-                times = 0;
+                times = 0
                 result_10s = []
         except IOError:
             print('----------------------------------------------')
@@ -192,10 +167,6 @@ else:
     fname = input('Enter the file name (ex. abc.csv) : ')
     testData = pd.read_csv(fname).to_numpy()
     testData = rescale.transform(testData)
-    print('KNN', le.inverse_transform(model.predict(testData)))
-    print('logostic RG', le.inverse_transform(model1.predict(testData)))
-    print('GradientBoosting', le.inverse_transform(model2.predict(testData)))
-    print('XGBoosoting', le.inverse_transform(model3.predict(testData)))
     print('LightGBM', le.inverse_transform(model4.predict(testData)))
     num_idle = 0;
     num_sleepy = 0;
@@ -212,7 +183,8 @@ else:
     num_max_idx = str(num_array.index(num_max))
     print('----------------------------------------------')
     print('MAX_Condition', num_max_idx)
-    ser = serial.Serial('COM5', 9600)
-    if ser.readable():
-        ser.write(str.encode(num_max_idx))
+    if bool_arduino:
+        ser = serial.Serial('COM5', 9600)
+        if ser.readable():
+            ser.write(str.encode(num_max_idx))
 
