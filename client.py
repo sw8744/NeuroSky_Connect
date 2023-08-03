@@ -13,7 +13,7 @@ def load_data(idlePath:str,sleepPath:str,sleepyPath:str):
     result = pd.concat([df1,df2,df3])
     return result
 
-df = load_data('result_idle.csv','result_sleep_1.csv','result_sleepy_1.csv') # 데이터 불러오는 코드임.
+df = load_data('result_idle.csv','result_sleep.csv','result_sleepy_1.csv') # 데이터 불러오는 코드임.
 
 df
 
@@ -78,14 +78,7 @@ if bool_eeg:
     print('--Client Information--')
     print(clientSocekt)
 
-    delta = [];
-    theta = [];
-    lowAlpha = [];
-    highAlpha = [];
-    lowBeta = [];
-    highBeta = [];
-    lowGamma = [];
-    highGamma = []
+    delta = []; theta = []; lowAlpha = []; highAlpha = []; lowBeta = []; highBeta = []; lowGamma = []; highGamma = []
     if bool_arduino:
         ser = serial.Serial('COM5', 9600)
     temp = 0
@@ -144,7 +137,7 @@ if bool_eeg:
                 num_max_idx = str(num_array.index(num_max))
                 print('----------------------------------------------')
                 print('MAX_Condition', num_max_idx)
-                if ser.readable() and bool_arduino:
+                if bool_arduino:
                     ser.write(str.encode(num_max_idx))
                 times = 0
                 result_10s = []
@@ -159,6 +152,7 @@ if bool_eeg:
             print('highBeta', highBeta)
             print('lowGamma', lowGamma)
             print('highGamma', highGamma)
+            break
         except SyntaxError:
             continue
 else:

@@ -12,7 +12,7 @@ def load_data(idlePath:str,sleepPath:str,sleepyPath:str):
     result = pd.concat([df1,df2,df3])
     return result
 
-df = load_data('result_idle.csv','result_sleep_1.csv','result_sleepy_1.csv') # 데이터 불러오는 코드임.
+df = load_data('result_idle.csv','result_sleep.csv','result_sleepy_1.csv') # 데이터 불러오는 코드임.
 
 df
 
@@ -71,18 +71,3 @@ unique,counts = np.unique(Y, return_counts=True)
 
 print('Training Completed')
 print('----------------------------------------------')
-
-
-test = pd.read_csv('DATA 2800.csv').to_numpy()
-
-resize_test = rescale.transform(X)
-print('KNN')
-print(le.inverse_transform(model.predict(resize_test)))
-print('logostic RG')
-print(le.inverse_transform(model1.predict(resize_test)))
-print('Gradient boosting')
-print(le.inverse_transform(model2.predict(resize_test)))
-print('XGBoosting')
-print(le.inverse_transform(model3.predict(resize_test)))
-print('LightGBM')
-print(le.inverse_transform(model4.predict(resize_test)))
