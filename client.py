@@ -80,7 +80,8 @@ if bool_eeg:
 
     delta = []; theta = []; lowAlpha = []; highAlpha = []; lowBeta = []; highBeta = []; lowGamma = []; highGamma = []
     if bool_arduino:
-        ser = serial.Serial('COM5', 9600)
+        serPort = input('Enter the Serial port Number (ex. COM5')
+        ser = serial.Serial(serPort, 9600)
     temp = 0
     times = 0
     result_10s = []
@@ -177,7 +178,8 @@ else:
         print('----------------------------------------------')
         print('MAX_Condition', num_max_idx)
         if bool_arduino:
-            ser = serial.Serial('COM5', 9600)
+            serPort = input('Enter the Serial port Number (ex. COM5')
+            ser = serial.Serial(serPort, 9600)
             if ser.readable():
                 ser.write(str.encode(num_max_idx))
     except FileNotFoundError:
