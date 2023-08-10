@@ -13,7 +13,7 @@ def load_data(idlePath:str,sleepPath:str,sleepyPath:str):
     result = pd.concat([df1,df2,df3])
     return result
 
-df = load_data('result_idle.csv','result_sleep.csv','result_sleepy_1.csv') # 데이터 불러오는 코드임.
+df = load_data('result_idle.csv','result_sleep.csv','result_sleepy.csv') # 데이터 불러오는 코드임.
 
 df
 

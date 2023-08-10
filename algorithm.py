@@ -12,7 +12,7 @@ def load_data(idlePath:str,sleepPath:str,sleepyPath:str):
     result = pd.concat([df1,df2,df3])
     return result
 
-df = load_data('result_idle.csv','result_sleep.csv','result_sleepy_1.csv') # 데이터 불러오는 코드임.
+df = load_data('result_idle.csv','result_sleep.csv','result_sleepy.csv') # 데이터 불러오는 코드임.
 
 df
 
@@ -36,18 +36,21 @@ print('KNN Model Training Start')
 model = KNeighborsClassifier()
 model.fit(x_train,y_train)
 print("Train Score :", model.score(x_train,y_train), "Test Score :", model.score(x_test,y_test))
+result_KNN = model.score(x_test,y_test)
 
 from sklearn.linear_model import LogisticRegression
 print("LogisticRegression Model Training Start")
 model1 = LogisticRegression()
 model1.fit(x_train,y_train)
 print("Train Score :", model1.score(x_train,y_train), "Test Score :", model1.score(x_test,y_test))
+result_LogisticRegression = model1.score(x_test,y_test)
 
 from sklearn.ensemble import GradientBoostingClassifier
 print("GradientBoosting Model Training Start")
 model2 = GradientBoostingClassifier()
 model2.fit(x_train,y_train)
 print("Train Score :", model2.score(x_train,y_train), "Test Score :", model2.score(x_test,y_test))
+result_GradientBoosting = model2.score(x_test,y_test)
 
 from xgboost import XGBClassifier
 print("XGBoost Model Training Start")
@@ -55,19 +58,24 @@ model3 = XGBClassifier(n_estimators = 400,learning_rate = 0.0001,max_depth=7)
 model3.fit(x_train,y_train)
 model3.score(x_test,y_test)
 print("Train Score :", model3.score(x_train,y_train), "Test Score :", model3.score(x_test,y_test))
+result_XGBoost = model3.score(x_test,y_test)
 
 from lightgbm import LGBMClassifier
 print("LightGBM Model Training Start")
 model4 = LGBMClassifier(n_estimators=200)
 model4.fit(x_train,y_train)
 print("Train Score :", model4.score(x_train,y_train), "Test Score :", model4.score(x_test,y_test))
+result_LightGBM = model4.score(x_test,y_test)
 
 unique, counts = np.unique(model3.predict(x_test), return_counts=True)
 unique, counts = np.unique(y_test, return_counts=True)
 
 le.classes_
 
+result = {'KNN': result_KNN, 'LogisticRegression': result_LogisticRegression, 'GradientBoosting': result_GradientBoosting, 'XGBoost': result_XGBoost, 'LightGBM': result_LightGBM}
+
 unique,counts = np.unique(Y, return_counts=True)
 
 print('Training Completed')
 print('----------------------------------------------')
+print('MAX_Efficient_Model :', max(result, key=result.get))
