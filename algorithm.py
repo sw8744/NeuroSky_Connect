@@ -3,7 +3,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
-
 def load_data(idlePath:str,sleepPath:str,sleepyPath:str):
     df1 = pd.read_csv(idlePath).assign(result=lambda x:'IDLE')
     df2 = pd.read_csv(sleepPath).assign(result=lambda x:'SLEEP')
