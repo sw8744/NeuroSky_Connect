@@ -80,7 +80,7 @@ if bool_eeg:
 
     delta = []; theta = []; lowAlpha = []; highAlpha = []; lowBeta = []; highBeta = []; lowGamma = []; highGamma = []
     if bool_arduino:
-        serPort = input('Enter the Serial port Number (ex. COM5')
+        serPort = input('Enter the Serial port Number (ex. COM5)')
         ser = serial.Serial(serPort, 9600)
     temp = 0
     times = 0
