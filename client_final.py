@@ -79,6 +79,7 @@ if bool_eeg:
         ser = serial.Serial(serPort, 9600)
     temp = 0
     times = 0
+    sleepyScore = 0
     result_10s = []
     while True:
         try:
@@ -131,9 +132,18 @@ if bool_eeg:
                 print('----------------------------------------------')
                 print('MAX_Condition', num_max_idx)
                 if bool_arduino:
-                    ser.write(str.encode(num_max_idx))
+                    # 0이 수면, 1이 졸음, 2가 깨워야 하는 상태
+                    if sleepyScore <= 1:
+                        ser.write(str.encode(num_max_idx))
+                    else:
+                        ser.write(str.encode("2"))
                 times = 0
                 result_10s = []
+                if num_max_idx == "1":
+                    sleepyScore += 1
+                elif num_max_idx == "0":
+                    sleepyScore = 0
+
         except IOError:
             print('----------------------------------------------')
             print('End Listening')
