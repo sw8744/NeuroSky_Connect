@@ -12,10 +12,25 @@ def load_data(path_1:str,path_2:str):
 
 df = load_data('result_0.csv','result_1.csv') # 데이터 불러오는 코드임.
 
-df
+
 
 Y = df['result'].to_numpy()
 X = df.drop(columns=['result']).to_numpy()
+
+from sklearn.manifold import TSNE
+tsne_np = TSNE(n_components=2).fit_transform(X)
+tsne_df = pd.DataFrame(tsne_np, columns=['x','y'])
+import matplotlib.pyplot as plt
+tsne_df['result'] = Y
+tsne_df_0 = tsne_df[tsne_df['result'] == 0]
+tsne_df_1 = tsne_df[tsne_df['result'] == 1]
+plt.scatter(tsne_df_0['x'],tsne_df_0['y'],color='red')
+plt.scatter(tsne_df_1['x'],tsne_df_1['y'],color='blue')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
+
 
 rescale = StandardScaler()
 rescale.fit(X)

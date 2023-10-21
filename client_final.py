@@ -5,6 +5,9 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
 import serial
+import sched, time
+
+s = sched.scheduler(time.time, time.sleep)
 def load_data(path_1:str,path_2:str):
     df1 = pd.read_csv(path_1)
     df2 = pd.read_csv(path_2)
@@ -92,6 +95,9 @@ if bool_eeg:
             if len(dict_string) == 1:
                 continue
             if dict_string['poorSignalLevel'] != 0:
+                print('----------------------------------------------')
+                print('Please Wear the Headset Properly')
+                print('----------------------------------------------')
                 continue
 
             print(dict_string)
@@ -117,7 +123,6 @@ if bool_eeg:
             print('LightGBM', le.inverse_transform(model4.predict(testData))[-1])
             if times < 10:
                 result_10s.append(le.inverse_transform(model4.predict(testData))[-1])
-                times += 1
             else:
                 num_0 = 0
                 num_1 = 0
@@ -143,6 +148,8 @@ if bool_eeg:
                     sleepyScore += 1
                 elif num_max_idx == "0":
                     sleepyScore = 0
+                times += 1
+                time.sleep(1000)
 
         except IOError:
             print('----------------------------------------------')
