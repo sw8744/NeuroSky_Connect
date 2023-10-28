@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
 import serial
+import time
 def load_data(path_1:str,path_2:str):
     df1 = pd.read_csv(path_1)
     df2 = pd.read_csv(path_2)
@@ -57,7 +58,7 @@ elif bool_arduino == 'n':
 
 if bool_eeg:
     HOST = '127.0.0.1'
-    PORT = 3
+    PORT = 3000
     BUFSIZE = 1024
     ADDR = (HOST, PORT)
 
@@ -73,10 +74,11 @@ if bool_eeg:
     print('--Client Information--')
     print(clientSocekt)
 
-    delta = []; theta = []; lowAlpha = []; highAlpha = []; lowBeta = []; highBeta = []; lowGamma = []; highGamma = []
+    attention = []; meditation = []; delta = []; theta = []; lowAlpha = []; highAlpha = []; lowBeta = []; highBeta = []; lowGamma = []; highGamma = []
     if bool_arduino:
         serPort = input('Enter the Serial port Number (ex. COM5) ')
         ser = serial.Serial(serPort, 9600)
+        time.sleep(2)
     temp = 0
     times = 0
     sleepyScore = 0
@@ -95,6 +97,8 @@ if bool_eeg:
                 continue
 
             print(dict_string)
+            attention.append(dict_string['eSense']['attention'])
+            meditation.append(dict_string['eSense']['meditation'])
             delta.append(dict_string['eegPower']['delta'])
             theta.append(dict_string['eegPower']['theta'])
             lowAlpha.append(dict_string['eegPower']['lowAlpha'])
@@ -103,7 +107,9 @@ if bool_eeg:
             highBeta.append(dict_string['eegPower']['highBeta'])
             lowGamma.append(dict_string['eegPower']['lowGamma'])
             highGamma.append(dict_string['eegPower']['highGamma'])
-            df = pd.DataFrame(delta, columns=['delta'])
+            df = pd.DataFrame(attention, columns=['attention'])
+            df['meditation'] = meditation
+            df['delta'] = delta
             df['theta'] = theta
             df['lowAlpha'] = lowAlpha
             df['highAlpha'] = highAlpha
@@ -119,30 +125,36 @@ if bool_eeg:
                 result_10s.append(le.inverse_transform(model4.predict(testData))[-1])
                 times += 1
             else:
-                num_0 = 0
-                num_1 = 0
-                for i in result_10s:
-                    if i == "0":
-                        num_0 += 1
-                    elif i == "1":
-                        num_1 += 1
-                num_array = [num_0, num_1]
-                num_max = max(num_0, num_1)
-                num_max_idx = str(num_array.index(num_max))
-                print('----------------------------------------------')
-                print('MAX_Condition', num_max_idx)
-                if bool_arduino:
-                    # 0이 수면, 1이 졸음, 2가 깨워야 하는 상태
-                    if sleepyScore <= 1:
-                        ser.write(str.encode(num_max_idx))
-                    else:
-                        ser.write(str.encode("2"))
-                times = 0
-                result_10s = []
-                if num_max_idx == "1":
-                    sleepyScore += 1
-                elif num_max_idx == "0":
-                    sleepyScore = 0
+                try:
+                    num_0 = 0
+                    num_1 = 0
+                    temp = result_10s
+                    for i in temp:
+                        if i == "0":
+                            num_0 += 1
+                        elif i == "1":
+                            num_1 += 1
+                            sleepyScore += 1
+                    num_array = [num_0, num_1]
+                    num_max = max(num_0, num_1)
+                    num_max_idx = str(num_array.index(num_max))
+                    print('----------------------------------------------')
+                    print('MAX_Condition', num_max_idx)
+                    if bool_arduino:
+                        # 0이 수면, 1이 졸음, 2가 깨워야 하는 상태
+                        if sleepyScore <= 1:
+                            ser.write(str.encode(num_max_idx))
+                        else:
+                            ser.write(str.encode("2"))
+                    times = 0
+                    result_10s = []; temp = []
+                    num_0 = 0; num_1 = 0
+                    if num_max_idx == "1":
+                        sleepyScore += 1
+                    elif num_max_idx == "0":
+                        sleepyScore = 0
+                except IOError:
+                    break
 
         except IOError:
             print('----------------------------------------------')
@@ -179,7 +191,9 @@ else:
         if bool_arduino:
             serPort = input('Enter the Serial port Number (ex. COM5) ')
             ser = serial.Serial(serPort, 9600)
+            time.sleep(2)
             if ser.readable():
-                ser.write(str.encode(num_max_idx))
+                ser.write(num_max_idx.encode())
+                ser.close()
     except FileNotFoundError:
         print('File Not Found')
