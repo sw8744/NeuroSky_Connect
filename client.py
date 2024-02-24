@@ -60,7 +60,7 @@ elif bool_arduino == 'n':
 
 if bool_eeg:
     HOST = '127.0.0.1'
-    PORT = 3
+    PORT = 3000
     BUFSIZE = 1024
     ADDR = (HOST, PORT)
 
