@@ -15,7 +15,7 @@ def load_data(path_1:str,path_2:str):
     result = pd.concat([df1,df2])
     return result
 
-df = load_data('result_0_edited.csv','result_1_edited.csv') # 데이터 불러오는 코드임.
+df = load_data('result_0.csv','result_1.csv') # 데이터 불러오는 코드임.
 
 Y = df['result'].to_numpy()
 X = df.drop(columns=['result']).to_numpy()
