@@ -5,17 +5,17 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
 import serial
-def load_data(idlePath:str,sleepPath:str,sleepyPath:str):
-    df1 = pd.read_csv(idlePath).assign(result=lambda x:'IDLE')
-    df2 = pd.read_csv(sleepPath).assign(result=lambda x:'SLEEP')
-    df3 = pd.read_csv(sleepyPath).assign(result=lambda x:'SLEEPY')
+import sched, time
 
-    result = pd.concat([df1,df2,df3])
+s = sched.scheduler(time.time, time.sleep)
+def load_data(path_1:str,path_2:str):
+    df1 = pd.read_csv(path_1)
+    df2 = pd.read_csv(path_2)
+
+    result = pd.concat([df1,df2])
     return result
 
-df = load_data('result_idle.csv','result_sleep.csv','result_sleepy.csv') # 데이터 불러오는 코드임.
-
-df
+df = load_data('result_0_edited.csv','result_1_edited.csv') # 데이터 불러오는 코드임.
 
 Y = df['result'].to_numpy()
 X = df.drop(columns=['result']).to_numpy()
@@ -40,8 +40,6 @@ print("Train Score :", model4.score(x_train,y_train), "Test Score :", model4.sco
 
 unique, counts = np.unique(y_test, return_counts=True)
 
-le.classes_
-
 unique,counts = np.unique(Y, return_counts=True)
 
 print('Training Completed')
@@ -62,7 +60,7 @@ elif bool_arduino == 'n':
 
 if bool_eeg:
     HOST = '127.0.0.1'
-    PORT = 3000
+    PORT = 3
     BUFSIZE = 1024
     ADDR = (HOST, PORT)
 
@@ -84,6 +82,7 @@ if bool_eeg:
         ser = serial.Serial(serPort, 9600)
     temp = 0
     times = 0
+    sleepyScore = 0
     result_10s = []
     while True:
         try:
@@ -96,6 +95,9 @@ if bool_eeg:
             if len(dict_string) == 1:
                 continue
             if dict_string['poorSignalLevel'] != 0:
+                print('----------------------------------------------')
+                print('Please Wear the Headset Properly')
+                print('----------------------------------------------')
                 continue
 
             print(dict_string)
@@ -121,27 +123,34 @@ if bool_eeg:
             print('LightGBM', le.inverse_transform(model4.predict(testData))[-1])
             if times < 10:
                 result_10s.append(le.inverse_transform(model4.predict(testData))[-1])
-                times += 1
             else:
-                num_idle = 0;
-                num_sleepy = 0;
-                num_sleep = 0
+                num_0 = 0
+                num_1 = 0
                 for i in result_10s:
-                    if i == "IDLE":
-                        num_idle += 1
-                    elif i == "SLEEPY":
-                        num_sleepy += 1
-                    elif i == "SLEEP":
-                        num_sleep += 1
-                num_array = [num_idle, num_sleepy, num_sleep]
-                num_max = max(num_idle, num_sleepy, num_sleep)
+                    if i == "0":
+                        num_0 += 1
+                    elif i == "1":
+                        num_1 += 1
+                num_array = [num_0, num_1]
+                num_max = max(num_0, num_1)
                 num_max_idx = str(num_array.index(num_max))
                 print('----------------------------------------------')
                 print('MAX_Condition', num_max_idx)
                 if bool_arduino:
-                    ser.write(str.encode(num_max_idx))
+                    # 0이 수면, 1이 졸음, 2가 깨워야 하는 상태
+                    if sleepyScore <= 1:
+                        ser.write(str.encode(num_max_idx))
+                    else:
+                        ser.write(str.encode("2"))
                 times = 0
                 result_10s = []
+                if num_max_idx == "1":
+                    sleepyScore += 1
+                elif num_max_idx == "0":
+                    sleepyScore = 0
+                times += 1
+                time.sleep(1000)
+
         except IOError:
             print('----------------------------------------------')
             print('End Listening')
@@ -162,18 +171,15 @@ else:
         testData = pd.read_csv(fname).to_numpy()
         testData = rescale.transform(testData)
         print('LightGBM', le.inverse_transform(model4.predict(testData)))
-        num_idle = 0;
-        num_sleepy = 0;
-        num_sleep = 0
+        num_0 = 0
+        num_1 = 0
         for i in le.inverse_transform(model4.predict(testData)):
-            if i == "IDLE":
-                num_idle += 1
-            elif i == "SLEEPY":
-                num_sleepy += 1
-            elif i == "SLEEP":
-                num_sleep += 1
-        num_array = [num_idle, num_sleepy, num_sleep]
-        num_max = max(num_idle, num_sleepy, num_sleep)
+            if i == "0":
+                num_0 += 1
+            elif i == "1":
+                num_1 += 1
+        num_array = [num_0, num_1]
+        num_max = max(num_0, num_1)
         num_max_idx = str(num_array.index(num_max))
         print('----------------------------------------------')
         print('MAX_Condition', num_max_idx)
